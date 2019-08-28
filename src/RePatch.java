@@ -64,13 +64,27 @@ public class RePatch {
                 fileLine++;
                 
                 // begin replace
-                if (line.startsWith("diff -r") || line.startsWith("diff --git")) {
+                boolean replace = false;
+                int replaceIdx = 5;
+                if (line.startsWith("diff -r")) {
+                    replace = true;
+                    replaceIdx = 5;
+
+                } else if (line.startsWith("diff --git")) {
+                    replace = true;
+                    replaceIdx = 3;
+                }
+
+                if (replace) {
                     // at the end of this line there's the file name we're searching
-                    replaceFrom = line.split("\\s")[5];
+                    replaceFrom = line.split("\\s")[replaceIdx];
                     String [] names = replaceFrom.split("/");
                     
                     String target = names[names.length - 1];
-                    
+                    if (target.startsWith("b/")) {
+                        target = target.replaceFirst("b/", "");
+                    }
+
                     System.err.println("--------- checking: " + target);
                     
                     // now search for this and replace it into the diff
