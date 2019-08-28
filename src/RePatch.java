@@ -64,7 +64,7 @@ public class RePatch {
                 fileLine++;
                 
                 // begin replace
-                if (line.startsWith("diff -r")) {
+                if (line.startsWith("diff -r") || line.startsWith("diff -git")) {
                     // at the end of this line there's the file name we're searching
                     replaceFrom = line.split("\\s")[5];
                     String [] names = replaceFrom.split("/");
