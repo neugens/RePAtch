@@ -55,9 +55,6 @@ public class RePatch {
             String line = null;
             int fileLine = 0;
 
-            String replaceWith = null;
-            String replaceFrom = null;
-            
             // process each line
             System.err.println("reading diff file");
             while ((line = reader.readLine()) != null) {
@@ -75,15 +72,19 @@ public class RePatch {
                     replaceIdx = 3;
                 }
 
+                String fileName = null;
+                String replaceWith = null;
+
                 if (replace) {
                     // at the end of this line there's the file name we're searching
-                    replaceFrom = line.split("\\s")[replaceIdx];
-                    String [] names = replaceFrom.split("/");
+                    fileName = line.split("\\s")[replaceIdx];
+                    if (fileName.startsWith("b/")) {
+                        fileName = fileName.replaceFirst("b/", "");
+                    }
+
+                    String [] names = fileName.split("/");
                     
                     String target = names[names.length - 1];
-                    if (target.startsWith("b/")) {
-                        target = target.replaceFirst("b/", "");
-                    }
 
                     System.err.println("--------- checking: " + target);
                     
@@ -93,9 +94,34 @@ public class RePatch {
                     if (finder.files.size() == 1) {
                         replaceWith = finder.files.get(0);
                     } else  {
+                        // let's see if we can find some hints of where this file can be before bailing
+                        System.err.println("multiple candidate for: " + target + " found, trying to match most likely");
+                        for (String file : finder.files) {
+                            // we just check the parent directory to see if there's a match
+                            String[] parents = fileName.split("/");
+                            String[] matchParents = file.split("/");
+                            if (parents.length < 2 || matchParents.length < 2) {
+                                // this shouldn't really be possible, since there would be more than one file
+                                // named the same way in the same location! Nonetheless, parents may be a
+                                // single file in the root directory
+                                break;
+                            }
+
+                            System.err.println("candidate: " + file);
+                            System.err.println("comparing parents: source " + parents[parents.length - 2] + " candidate: " + matchParents[matchParents.length - 2]);
+
+                            if (parents[parents.length - 2].equals(matchParents[matchParents.length - 2])) {
+                                // found!
+                                replaceWith = file;
+                                System.err.println("found candidate for: " + target + ": " + replaceWith);
+                                break;
+                            }
+                        }
+
                         // skip this one
-                        System.err.println("please, manually update: " + line + " (" + fileLine + ")");
-                        replaceWith = null;
+                        if (replaceWith == null) {
+                            System.err.println("please, manually update: " + line + " (" + fileLine + ")");
+                        }
                     }
                     
                 } else if (line.startsWith("@@")) {
@@ -105,7 +131,7 @@ public class RePatch {
                 if (replaceWith != null) {
                     System.err.println("delta: \t" + replaceWith);
                     System.err.println("source: \t" + line);
-                    line = line.replaceAll(replaceFrom, replaceWith);
+                    line = line.replaceAll(fileName, replaceWith);
                     System.err.println("destination: \t" + line);
                 }
                 
