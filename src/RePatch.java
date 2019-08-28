@@ -56,6 +56,9 @@ public class RePatch {
             int fileLine = 0;
 
             // process each line
+            String fileName = null;
+            String replaceWith = null;
+
             System.err.println("reading diff file");
             while ((line = reader.readLine()) != null) {
                 fileLine++;
@@ -71,9 +74,6 @@ public class RePatch {
                     replace = true;
                     replaceIdx = 3;
                 }
-
-                String fileName = null;
-                String replaceWith = null;
 
                 if (replace) {
                     // at the end of this line there's the file name we're searching
@@ -104,7 +104,7 @@ public class RePatch {
                                 // this shouldn't really be possible, since there would be more than one file
                                 // named the same way in the same location! Nonetheless, parents may be a
                                 // single file in the root directory
-                                break;
+                                continue;
                             }
 
                             System.err.println("candidate: " + file);
@@ -135,10 +135,10 @@ public class RePatch {
                     System.err.println("destination: \t" + line);
                 }
                 
-                writer.write(line + "\n");                
+                writer.write(line + "\n");
             }
             
-            System.err.println("done!");
+            System.err.println("done: " + destination);
         }
     }
 }
