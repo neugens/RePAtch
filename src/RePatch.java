@@ -29,9 +29,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Adapts a patch so that it fits in the OpenJDK 8 directory layout from later versions.
@@ -62,7 +60,7 @@ public class RePatch {
 
     public static void main(String[] args) throws Exception {
 
-        Set<String> problemList = new HashSet<>();
+        List<String> problemList = new ArrayList<>();
 
         if (args.length != 2) {
             System.err.println("Need patch and target OpenJDK 8 root repository!!");
